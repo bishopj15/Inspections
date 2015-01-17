@@ -18,10 +18,12 @@
 	<classpathentry kind="lib" path="libs/jersey-json-1.18.3.jar"/>
 	<classpathentry kind="lib" path="libs/jersey-server-1.18.3.jar"/>
 	<classpathentry kind="lib" path="libs/jersey-servlet-1.18.3.jar"/>
+	<classpathentry kind="lib" path="libs/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="libs/commons-dbcp2-2.0.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="libs/commons-dbcp2-2.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/commons-pool2-2.3-javadoc.jar"/>
 	<classpathentry kind="lib" path="libs/commons-pool2-2.3.jar"/>
 	<classpathentry kind="lib" path="libs/mysql-connector-java-5.1.34-bin.jar"/>
+	<classpathentry kind="lib" path="libs/servlet-api.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

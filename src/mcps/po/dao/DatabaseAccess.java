@@ -9,6 +9,7 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -81,33 +82,42 @@ public class DatabaseAccess {
 	private boolean initDatabaseAccess(){
 		try{
 			Class.forName(jdbcDriver);
-			
+
 			//create ConnectionFactory pool will use to create Connections
-			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(dbURI, null);
+			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(dbURI, uid, pwd);
 			
 			//create PoolableConnectionFactory to wrap the real connections
 			PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
 			
+			//pool config
+			GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+			poolConfig.setMaxTotal(maxActive);
+			poolConfig.setMaxWaitMillis(maxWait);
+	        poolConfig.setMinIdle(maxIdle);
+			 
 			//create actual pool of connections
-			ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+			ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory, poolConfig);
 			
 			//create pooling driver
-			Class.forName("org.apache.commons.dbcp.PoolingDriver");
+			Class.forName("org.apache.commons.dbcp2.PoolingDriver");
 			PoolingDriver driver = (PoolingDriver) DriverManager.getDriver(poolingDriver);
 			
 			//register pool
 			driver.registerPool(dbPoolName, connectionPool);
 			
-			//validate pool
-			this.printDriverStats();
-			Connection c = getConnection();
-			this.printDriverStats();
-			c.close();this.printDriverStats();
+//			//validate pool
+//			this.printDriverStats();
+//			Connection c = getConnection();
+//			this.printDriverStats();
+//			//c.close();
+//			this.printDriverStats();
+			
 			this.poolSetup = true;
 			
 			
 			return true;
 		} catch(Exception e) {
+			System.out.println(e.getMessage());
 			System.out.println("Error setting up database pool");
 		}
 
@@ -147,7 +157,16 @@ public class DatabaseAccess {
 	}
 	
 	public void shutdownDriver() throws Exception {
-        PoolingDriver driver = (PoolingDriver) DriverManager.getDriver(poolingDriver);
-        driver.closePool(dbPoolName);
+		try{
+			if(this.poolSetup){
+				PoolingDriver driver = (PoolingDriver) DriverManager.getDriver(poolingDriver);
+		        if(driver != null){
+		        	driver.closePool(dbPoolName);
+		        }
+			}
+		} catch(Exception e){
+			
+		}
+        
     }
 }

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Inspections" basedir="." default="usage">
+	<property name="ant.project.name" value="po_inspections" />
+	<property name="basedir" value="." />
+	<property name="target.version" value="1.7" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="src.build.dir" value="${basedir}/extbuild/WEB-INF/classes" />
+	<property name="extbuild" value="${basedir}/extbuild" />
+	<property name="web.dir" value="${basedir}/WebContent" />
+	<property name="war.name" value="${ant.project.name}.war" />
+	<property name="lib" value="${web.dir}/WEB-INF/lib" />
+	<property name="index.dir" value="${test.build.dir}/index" />
+	<property name="system.jdbcfile" value="jdbc.properties" />
+	<property name="extlibs" value="${basedir}/libs" />
+	
+	<target name="usage" depends="clean, compile-src">
+		<echo message="" />
+		<echo message="${ant.project.name} build file" />
+		<echo message="-----------------------------------" />
+		<echo message="" />
+		<!-- <exec executable="ant">
+			<arg value="-p" />
+		</exec> --> 
+	</target>
+	
+	<!-- classpath definitions -->
+	<path id="master.classpath">
+		<fileset dir="${lib}" includes="*.jar" />
+		<fileset dir="${extlibs}" includes="*.jar" />
+	</path>
+	
+	<path id="project.classpath">
+		<fileset dir="${basedir}/WebContent/WEB-INF/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${extlibs}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+		<!-- Clean targets -->
+	<target name="clean" description="Clean output directories">
+		<antcall target="clean-src" />
+		<antcall target="clean-dist" />
+		<antcall target="clean-war" />
+	</target>
+
+	<target name="clean-src" description="Removes the build source directory.">
+		<delete dir="${src.build.dir}" />
+	</target>
+
+	<target name="clean-dist" description="Removes the build distribution directory.">
+		<delete dir="${build.dist}" />
+	</target>
+
+	<target name="clean-war" description="Removes the war directory.">
+	    <delete dir="${war.dir}" />
+	</target>
+	
+	<target name="build" description="Build our complete finished application">
+		<antcall target="compile-src"></antcall>
+		<antcall target="buildwar"></antcall>
+	</target>
+	
+	<!-- compiles the source code-->
+	<target name="compile-src" description="Compile main source tree java files">
+		<mkdir dir="${src.build.dir}" /> <!--  WebContent/dist -->
+		<!-- <exec executable="${node}">
+			<arg value="${gulp}"/>
+		</exec> -->
+		<javac destdir="${src.build.dir}" target="${target.version}" includeantruntime="false"
+		       deprecation="false"    optimize="false"
+		       failonerror="true"     errorProperty="src.compile.failed">
+			<src path="${src.dir}" />
+			<classpath refid="master.classpath" />
+		</javac>
+		<fail message="Source compile failed! Check test reports." if="src.compile.failed" />
+	</target>
+	
+	<target name="buildwar" description="Build application as a WAR file (no src)">
+		<!-- <copy file="${web.dir}/WEB-INF/StripesResources.properties" todir="${src.build.dir}"/> -->
+		<!-- copy all the files from the webcontent directory into extbuild -->
+		<copy todir="${extbuild}">
+			<fileset dir="${web.dir}">
+				<include name="*.jar"/>
+			</fileset>	
+		</copy>
+		
+		<!--copy build information file to ext build so that it is packaged for war. -->
+				<copy file="${build_information_file}" todir="${extbuild}"/>
+
+		<!-- clean out any leftover war file -->
+		<delete file="${war.dir}/${war.name}" />
+
+		<war destfile="${war.dir}/${war.name}" webxml="${extbuild}/WEB-INF/web.xml">
+			<fileset dir="${extbuild}">
+				<include name="**/*.*" />
+			</fileset>
+		</war>
+
+		<delete includeEmptyDirs="true" quiet="true">
+			<fileset dir="${extbuild}/**/*.*" />
+		</delete>
+	</target>
+	
+
+	
+</project>
